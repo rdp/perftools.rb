@@ -8,6 +8,18 @@ def sys(cmd)
   ret
 end
 
+# overcome http://redmine.ruby-lang.org/issues/show/2510
+
+if RUBY_PLATFORM =~ /mingw/ && RUBY_VERSION == '1.9.1'
+ def sys(cmd)
+  puts "  -- #{cmd}"
+  unless ret = system(cmd)
+    raise "#{cmd} failed, please report to perftools@tmm1.net with pastie.org link to #{CWD}/mkmf.log and #{CWD}/src/google-perftools-1.4/config.log"
+  end
+  ret
+ end
+end  
+
 require 'mkmf'
 require 'fileutils'
 
@@ -67,7 +79,7 @@ Dir.chdir('src') do
     if RUBY_PLATFORM =~ /darwin10/
       ENV['CFLAGS'] = ENV['CXXFLAGS'] = '-D_XOPEN_SOURCE'
     end
-    sys("./configure --disable-heap-profiler --disable-heap-checker --disable-debugalloc --disable-shared")
+    sys("sh ./configure --disable-heap-profiler --disable-heap-checker --disable-debugalloc --disable-shared")
     sys("make")
     FileUtils.cp '.libs/libprofiler.a', '../../librubyprofiler.a'
   end
